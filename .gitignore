@@ -1,0 +1,5 @@
+build/
+.clangd
+include/glad/
+include/KHR/
+src/glad.c
