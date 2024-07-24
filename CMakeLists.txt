@@ -10,6 +10,16 @@ find_package(SDL2 REQUIRED CONFIG REQUIRED COMPONENTS SDL2)
 find_package(SDL2 REQUIRED CONFIG COMPONENTS SDL2main)
 find_package(Eigen3 REQUIRED)
 
+include(FetchContent)
+
+FetchContent_Declare(
+	glm
+	GIT_REPOSITORY	https://github.com/g-truc/glm.git
+	GIT_TAG 	bf71a834948186f4097caa076cd2663c69a10e1e #refs/tags/1.0.1
+)
+
+FetchContent_MakeAvailable(glm)
+
 include_directories(
     include
     ${EIGEN3_INCLUDE_DIR}
@@ -25,10 +35,12 @@ target_include_directories(foo PUBLIC include)
 add_executable(LearningOpenGL main.cpp)
 
 target_link_libraries(LearningOpenGL
+    PRIVATE
     glad
     foo
     SDL2::SDL2
     SDL2::SDL2main
+    glm::glm
 )
 
 # Set the working directory to the root of the project for the executable

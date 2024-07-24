@@ -1,5 +1,9 @@
 #include <SDL2/SDL.h>
 #include <glad/glad.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include <iostream>
 #include <string>
 #include "shader.hpp"
@@ -110,10 +114,24 @@ class App {
       void Update() {
           // Update logic can be implemented here
           float timeValue = SDL_GetTicks() / 1000.0f;
+          glm::mat4 transform = glm::mat4(1.0f);
+          transform = glm::rotate(transform, timeValue, glm::vec3(0.0f, 0.0f, 1.0f));
+
+          int transformLoc = glGetUniformLocation(shader->ID, "transform");
+          glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
+
           float greenValue = sin(timeValue) / 2.0f + 0.5f;
           int vertexColorLocation = glGetUniformLocation(shader->ID, "dataColor");
           glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
       }
+
+      // void Update() {
+      //     // Update logic can be implemented here
+      //     float timeValue = SDL_GetTicks() / 1000.0f;
+      //     float greenValue = sin(timeValue) / 2.0f + 0.5f;
+      //     int vertexColorLocation = glGetUniformLocation(shader->ID, "dataColor");
+      //     glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+      // }
 
       void Render() {
           glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
