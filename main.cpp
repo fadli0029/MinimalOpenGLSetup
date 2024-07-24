@@ -1,94 +1,155 @@
 #include <SDL2/SDL.h>
 #include <glad/glad.h>
 #include <iostream>
+#include <string>
+#include "shader.hpp"
 
-const int& gScreenHeight = 600;
-const int& gScreenWidth  = 800;
-SDL_Window*   gGraphicsApplicationWindow = nullptr;
-SDL_GLContext gOpenGLContext = nullptr;
+// Vertex shader source code
+const char* vertexShaderPath = "shaders/vert.vs";
+const char* fragmentShaderPath = "shaders/frag.fs";
 
-bool gQuit = false;
+class App {
+public:
+    App(int width, int height, const std::string& title)
+        : screenWidth(width), screenHeight(height), windowTitle(title), window(nullptr), context(nullptr), quit(false) {}
 
-void GetOpenGLVersionInfo() {
-  std::cout << "Vendor: " << glGetString(GL_VENDOR) << std::endl;
-  std::cout << "Renderer: " << glGetString(GL_RENDERER) << std::endl;
-  std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
-  std::cout << "Shader Language: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
-}
+    bool Initialize() {
+        if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+            std::cerr << "SDL2 could not initialize video subsystem." << std::endl;
+            return false;
+        }
 
-void InitializeProgram() {
-  if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-    std::cout << "SDL2 could not initialize video subsystem." << std::endl;
-    exit(1);
-  }
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+        window = SDL_CreateWindow(
+            windowTitle.c_str(),
+            SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+            screenWidth, screenHeight,
+            SDL_WINDOW_OPENGL
+        );
+        if (!window) {
+            std::cerr << "SDL_Window could not be created." << std::endl;
+            return false;
+        }
 
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+        context = SDL_GL_CreateContext(window);
+        if (!context) {
+            std::cerr << "OpenGL context could not be created." << std::endl;
+            return false;
+        }
 
-  gGraphicsApplicationWindow = SDL_CreateWindow(
-      "OpenGL Window",
-      0, 0,
-      gScreenWidth, gScreenHeight,
-      SDL_WINDOW_OPENGL
-  );
-  if (gGraphicsApplicationWindow == nullptr) {
-    std::cout << "SDL_Window was not able to be created." << std::endl;
-    exit(1);
-  }
+        if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
+            std::cerr << "GLAD could not initialize OpenGL context." << std::endl;
+            return false;
+        }
 
-  gOpenGLContext = SDL_GL_CreateContext(gGraphicsApplicationWindow);
-  if (gOpenGLContext == nullptr) {
-    std::cout << "OpenGL context not available." << std::endl;
-    exit(1);
-  }
-
-  if (!gladLoadGLLoader(SDL_GL_GetProcAddress)) {
-    std::cout << "GLAD failed to initialize OpenGL context." << std::endl;
-    exit(1);
-  }
-
-  GetOpenGLVersionInfo();
-}
-
-void Input() {
-  SDL_Event e;
-  while (SDL_PollEvent(&e)) {
-    if (e.type == SDL_QUIT) {
-      std::cout << "SDL_QUIT event was triggered." << std::endl;
-      gQuit = true;
+        GetOpenGLVersionInfo();
+        InitOpenGL();
+        return true;
     }
-  }
-}
 
-void PreDraw() {
-}
+    void Run() {
+        while (!quit) {
+            ProcessInput();
+            Update();
+            Render();
+            SDL_GL_SwapWindow(window);
+        }
+        CleanUp();
+    }
 
-void Draw() {
-}
+private:
+    void GetOpenGLVersionInfo() {
+        std::cout << "=============================================================" << std::endl;
+        std::cout << "Vendor: " << glGetString(GL_VENDOR) << std::endl;
+        std::cout << "Renderer: " << glGetString(GL_RENDERER) << std::endl;
+        std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
+        std::cout << "Shader Language: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
+        std::cout << "=============================================================" << std::endl;
+        std::cout << std::endl;
+    }
 
-void MainLoop() {
-  while (!gQuit) {
-    Input();
-    PreDraw();
-    Draw();
+    void InitOpenGL() {
+        shader = new Shader(vertexShaderPath, fragmentShaderPath);
 
-    SDL_GL_SwapWindow(gGraphicsApplicationWindow);
-  }
-}
+        float vertices[] = {
+            0.0f,  0.5f, 0.0f,
+           -0.5f, -0.5f, 0.0f,
+            0.5f, -0.5f, 0.0f
+        };
 
-void CleanUp() {
-  // SDL_GL_DeleteContext(gOpenGLContext);
-  SDL_DestroyWindow(gGraphicsApplicationWindow);
-  SDL_Quit();
-}
+        glGenVertexArrays(1, &VAO);
+        glGenBuffers(1, &VBO);
+
+        glBindVertexArray(VAO);
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
+
+    void ProcessInput() {
+        SDL_Event e;
+        while (SDL_PollEvent(&e)) {
+            if (e.type == SDL_QUIT) {
+                std::cout << "SDL_QUIT event triggered." << std::endl;
+                quit = true;
+            }
+        }
+    }
+
+    void Update() {
+        // Update logic can be implemented here
+        float timeValue = SDL_GetTicks() / 1000.0f;
+        float greenValue = sin(timeValue) / 2.0f + 0.5f;
+        int vertexColorLocation = glGetUniformLocation(shader->ID, "dataColor");
+        glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+    }
+
+    void Render() {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        shader->use();
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+    }
+
+    void CleanUp() {
+        glDeleteVertexArrays(1, &VAO);
+        glDeleteBuffers(1, &VBO);
+        delete shader;
+        SDL_GL_DeleteContext(context);
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+    }
+
+    int screenWidth;
+    int screenHeight;
+
+    std::string windowTitle;
+
+    SDL_Window* window;
+    SDL_GLContext context;
+
+    bool quit;
+    unsigned int VAO, VBO;
+    Shader* shader;
+};
 
 int main() {
-  InitializeProgram();
-  MainLoop();
-  CleanUp();
-  return 0;
+    App app(800, 600, "OpenGL Window");
+    if (app.Initialize()) {
+        app.Run();
+    } else {
+        std::cerr << "Failed to initialize the application." << std::endl;
+    }
+    return 0;
 }

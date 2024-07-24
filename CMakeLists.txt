@@ -30,3 +30,8 @@ target_link_libraries(LearningOpenGL
     SDL2::SDL2
     SDL2::SDL2main
 )
+
+# Set the working directory to the root of the project for the executable
+set_target_properties(LearningOpenGL PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/.."
+)
