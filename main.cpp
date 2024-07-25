@@ -11,12 +11,58 @@
 #include "camera.hpp"
 
 // Shaders source code
-const char* vertexShaderPath   = "shaders/vert.vs";
+const char* vertexShaderPath = "shaders/vert.vs";
 const char* fragmentShaderPath = "shaders/frag.fs";
 
 // Timing
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
+
+// Base input handler class
+class InputHandler {
+public:
+    virtual ~InputHandler() = default;
+    virtual void HandleKeyboardInput(const SDL_Event& e, float deltaTime) = 0;
+    virtual void HandleMouseMotion(const SDL_Event& e) = 0;
+    virtual void HandleMouseWheel(const SDL_Event& e) = 0;
+};
+
+// FPS input handler class
+class FPSInputHandler : public InputHandler {
+public:
+    FPSInputHandler(Camera& camera) : camera(camera) {}
+    void HandleKeyboardInput(const SDL_Event& e, float deltaTime) override {
+        if (e.type == SDL_KEYDOWN) {
+            switch (e.key.keysym.sym) {
+                case SDLK_w:
+                    camera.ProcessKeyboard(FORWARD, deltaTime);
+                    break;
+                case SDLK_s:
+                    camera.ProcessKeyboard(BACKWARD, deltaTime);
+                    break;
+                case SDLK_a:
+                    camera.ProcessKeyboard(LEFT, deltaTime);
+                    break;
+                case SDLK_d:
+                    camera.ProcessKeyboard(RIGHT, deltaTime);
+                    break;
+                case SDLK_ESCAPE:
+                    SDL_Event quitEvent;
+                    quitEvent.type = SDL_QUIT;
+                    SDL_PushEvent(&quitEvent);
+                    break;
+            }
+        }
+    }
+    void HandleMouseMotion(const SDL_Event& e) override {
+        camera.ProcessMouseMovement(e.motion.xrel, -e.motion.yrel);
+    }
+    void HandleMouseWheel(const SDL_Event& e) override {
+        camera.ProcessMouseScroll(e.wheel.y);
+    }
+private:
+    Camera& camera;
+};
 
 class App {
 public:
@@ -27,7 +73,12 @@ public:
           window(nullptr),
           context(nullptr),
           quit(false),
-          camera(glm::vec3(0.0f, 0.0f, 3.0f)) {}
+          camera(glm::vec3(0.0f, 0.0f, 3.0f)),
+          inputHandler(new FPSInputHandler(camera)) {}
+
+    ~App() {
+        delete inputHandler;
+    }
 
     bool Initialize() {
         if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -98,7 +149,7 @@ private:
     void InitOpenGL() {
         shader = new Shader(vertexShaderPath, fragmentShaderPath);
 
-        // // Generate random colors for the vertices every build and run
+        // Generate random colors for the vertices every build and run
         std::random_device rd;
         std::mt19937 gen(rd());
         std::uniform_real_distribution<> dis(0.0, 1.0);
@@ -157,46 +208,12 @@ private:
                 std::cout << "SDL_QUIT event triggered." << std::endl;
                 quit = true;
             } else if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP) {
-                HandleKeyboardInput(e);
+                inputHandler->HandleKeyboardInput(e, deltaTime);
             } else if (e.type == SDL_MOUSEMOTION) {
-                HandleMouseMotion(e);
+                inputHandler->HandleMouseMotion(e);
             } else if (e.type == SDL_MOUSEWHEEL) {
-                HandleMouseWheel(e);
+                inputHandler->HandleMouseWheel(e);
             }
-        }
-    }
-
-    void HandleKeyboardInput(const SDL_Event& e) {
-        if (e.type == SDL_KEYDOWN) {
-            switch (e.key.keysym.sym) {
-                case SDLK_w:
-                    camera.ProcessKeyboard(FORWARD, deltaTime);
-                    break;
-                case SDLK_s:
-                    camera.ProcessKeyboard(BACKWARD, deltaTime);
-                    break;
-                case SDLK_a:
-                    camera.ProcessKeyboard(LEFT, deltaTime);
-                    break;
-                case SDLK_d:
-                    camera.ProcessKeyboard(RIGHT, deltaTime);
-                    break;
-                case SDLK_ESCAPE:
-                    quit = true;
-                    break;
-            }
-        }
-    }
-
-    void HandleMouseMotion(const SDL_Event& e) {
-        if (e.type == SDL_MOUSEMOTION) {
-            camera.ProcessMouseMovement(e.motion.xrel, -e.motion.yrel);
-        }
-    }
-
-    void HandleMouseWheel(const SDL_Event& e) {
-        if (e.type == SDL_MOUSEWHEEL) {
-            camera.ProcessMouseScroll(e.wheel.y);
         }
     }
 
@@ -240,16 +257,14 @@ private:
 
     int screenWidth;
     int screenHeight;
-
     std::string windowTitle;
-
     SDL_Window* window;
     SDL_GLContext context;
-
     bool quit;
     unsigned int VAO, VBO, EBO;
     Shader* shader;
     Camera camera;
+    InputHandler* inputHandler;
 };
 
 int main() {
