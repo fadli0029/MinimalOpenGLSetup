@@ -103,15 +103,23 @@ private:
 
         float vertices[] = {
             // positions          // colors
-             0.5f,  0.5f, 0.0f,   float(dis(gen)), float(dis(gen)), float(dis(gen)),
-             0.5f, -0.5f, 0.0f,   float(dis(gen)), float(dis(gen)), float(dis(gen)),
-            -0.5f, -0.5f, 0.0f,   float(dis(gen)), float(dis(gen)), float(dis(gen)),
-            -0.5f,  0.5f, 0.0f,   float(dis(gen)), float(dis(gen)), float(dis(gen))
+            -0.5f, -0.5f, -0.5f,   float(dis(gen)), float(dis(gen)), float(dis(gen)),
+             0.5f, -0.5f, -0.5f,   float(dis(gen)), float(dis(gen)), float(dis(gen)),
+             0.5f,  0.5f, -0.5f,   float(dis(gen)), float(dis(gen)), float(dis(gen)),
+            -0.5f,  0.5f, -0.5f,   float(dis(gen)), float(dis(gen)), float(dis(gen)),
+            -0.5f, -0.5f,  0.5f,   float(dis(gen)), float(dis(gen)), float(dis(gen)),
+             0.5f, -0.5f,  0.5f,   float(dis(gen)), float(dis(gen)), float(dis(gen)),
+             0.5f,  0.5f,  0.5f,   float(dis(gen)), float(dis(gen)), float(dis(gen)),
+            -0.5f,  0.5f,  0.5f,   float(dis(gen)), float(dis(gen)), float(dis(gen))
         };
 
         unsigned int indices[] = {
-            0, 1, 3, // first triangle
-            1, 2, 3  // second triangle
+            0, 1, 2, 2, 3, 0,    // front face
+            4, 5, 6, 6, 7, 4,    // back face
+            0, 1, 5, 5, 4, 0,    // bottom face
+            2, 3, 7, 7, 6, 2,    // top face
+            0, 3, 7, 7, 4, 0,    // left face
+            1, 2, 6, 6, 5, 1     // right face
         };
 
         glGenVertexArrays(1, &VAO);
@@ -131,6 +139,8 @@ private:
 
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
         glEnableVertexAttribArray(1);
+
+        glEnable(GL_DEPTH_TEST);
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
@@ -189,7 +199,7 @@ private:
         shader->setMat4("projection", projection);
 
         glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
     }
 
     void CleanUp() {
