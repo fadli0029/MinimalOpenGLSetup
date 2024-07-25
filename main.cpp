@@ -18,14 +18,16 @@ const char* fragmentShaderPath = "shaders/frag.fs";
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-// Camera
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
-bool firstMouse = true;
-
 class App {
 public:
     App(int width, int height, const std::string& title)
-        : screenWidth(width), screenHeight(height), windowTitle(title), window(nullptr), context(nullptr), quit(false) {}
+        : screenWidth(width),
+          screenHeight(height),
+          windowTitle(title),
+          window(nullptr),
+          context(nullptr),
+          quit(false),
+          camera(glm::vec3(0.0f, 0.0f, 3.0f)) {}
 
     bool Initialize() {
         if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -102,7 +104,7 @@ private:
         std::uniform_real_distribution<> dis(0.0, 1.0);
 
         float vertices[] = {
-            // positions          // colors
+            // positions           // colors
             -0.5f, -0.5f, -0.5f,   float(dis(gen)), float(dis(gen)), float(dis(gen)),
              0.5f, -0.5f, -0.5f,   float(dis(gen)), float(dis(gen)), float(dis(gen)),
              0.5f,  0.5f, -0.5f,   float(dis(gen)), float(dis(gen)), float(dis(gen)),
@@ -152,36 +154,47 @@ private:
             if (e.type == SDL_QUIT) {
                 std::cout << "SDL_QUIT event triggered." << std::endl;
                 quit = true;
+            } else if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP) {
+                HandleKeyboardInput(e);
+            } else if (e.type == SDL_MOUSEMOTION) {
+                HandleMouseMotion(e);
+            } else if (e.type == SDL_MOUSEWHEEL) {
+                HandleMouseWheel(e);
             }
+        }
+    }
 
-            if (e.type == SDL_KEYDOWN) {
-                if (e.key.keysym.sym == SDLK_ESCAPE) {
-                    quit = true;
-                }
-                if (e.key.keysym.sym == SDLK_w) {
+    void HandleKeyboardInput(const SDL_Event& e) {
+        if (e.type == SDL_KEYDOWN) {
+            switch (e.key.keysym.sym) {
+                case SDLK_w:
                     camera.ProcessKeyboard(FORWARD, deltaTime);
-                }
-                if (e.key.keysym.sym == SDLK_s) {
+                    break;
+                case SDLK_s:
                     camera.ProcessKeyboard(BACKWARD, deltaTime);
-                }
-                if (e.key.keysym.sym == SDLK_a) {
+                    break;
+                case SDLK_a:
                     camera.ProcessKeyboard(LEFT, deltaTime);
-                }
-                if (e.key.keysym.sym == SDLK_d) {
+                    break;
+                case SDLK_d:
                     camera.ProcessKeyboard(RIGHT, deltaTime);
-                }
+                    break;
+                case SDLK_ESCAPE:
+                    quit = true;
+                    break;
             }
+        }
+    }
 
-            if (e.type == SDL_MOUSEMOTION) {
-                float xpos = static_cast<float>(e.motion.xrel);
-                float ypos = static_cast<float>(e.motion.yrel);
+    void HandleMouseMotion(const SDL_Event& e) {
+        if (e.type == SDL_MOUSEMOTION) {
+            camera.ProcessMouseMovement(e.motion.xrel, -e.motion.yrel);
+        }
+    }
 
-                camera.ProcessMouseMovement(xpos, ypos);
-            }
-
-            if (e.type == SDL_MOUSEWHEEL) {
-                camera.ProcessMouseScroll(static_cast<float>(e.wheel.y));
-            }
+    void HandleMouseWheel(const SDL_Event& e) {
+        if (e.type == SDL_MOUSEWHEEL) {
+            camera.ProcessMouseScroll(e.wheel.y);
         }
     }
 
@@ -190,14 +203,23 @@ private:
     }
 
     void Render() {
+        // 1. Clear the screen
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // 2. Use the shader program
         shader->use();
 
+        // 3. Set the model, view and projection matrices
         glm::mat4 view = camera.GetViewMatrix();
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
+
         shader->setMat4("view", view);
         shader->setMat4("projection", projection);
 
+        glm::mat4 model = glm::mat4(1.0f);
+        shader->setMat4("model", model);
+
+        // 4. Render the cube (or whatever object you have)
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
     }
@@ -223,6 +245,7 @@ private:
     bool quit;
     unsigned int VAO, VBO, EBO;
     Shader* shader;
+    Camera camera;
 };
 
 int main() {
