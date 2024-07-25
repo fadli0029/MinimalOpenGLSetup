@@ -98,7 +98,7 @@ private:
     void InitOpenGL() {
         shader = new Shader(vertexShaderPath, fragmentShaderPath);
 
-        // Generate random colors for the vertices every build and run
+        // // Generate random colors for the vertices every build and run
         std::random_device rd;
         std::mt19937 gen(rd());
         std::uniform_real_distribution<> dis(0.0, 1.0);
@@ -146,6 +146,8 @@ private:
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
+
+        shader->use();
     }
 
     void ProcessInput() {
@@ -209,15 +211,17 @@ private:
         // 2. Use the shader program
         shader->use();
 
-        // 3. Set the model, view and projection matrices
+        // 3. Set variables (uniforms) in the shaders (ex: the model, view and projection matrices)
+        // (a) Set the camera view and projection matrices
         glm::mat4 view = camera.GetViewMatrix();
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
-
+        glm::mat4 model = glm::mat4(1.0f);
         shader->setMat4("view", view);
         shader->setMat4("projection", projection);
-
-        glm::mat4 model = glm::mat4(1.0f);
         shader->setMat4("model", model);
+
+        // (b) Other stuff to do to the shaders...
+        // ...
 
         // 4. Render the cube (or whatever object you have)
         glBindVertexArray(VAO);
