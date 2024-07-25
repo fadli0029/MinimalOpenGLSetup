@@ -22,6 +22,8 @@ FetchContent_MakeAvailable(glm)
 
 include_directories(
     include
+    include/cameras
+    include/input_handlers
     ${EIGEN3_INCLUDE_DIR}
     ${SDL2_INCLUDE_DIRS}
 )
