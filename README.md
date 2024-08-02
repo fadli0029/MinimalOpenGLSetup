@@ -1,3 +1,13 @@
+### TODO's
+[x] FPS Camera system
+[x] Arcball Camera system
+[ ] Code cleanup
+[ ] Functionality to switch between different camera systems (via some kind of button?)
+[ ] Figure out better way to display the cube? (not that important now)
+[ ] Integrate Bullet3 physics
+[ ] More code cleanup
+
+
 ### Using Glad
 This setup uses Glad to include OpenGL functionalities: https://glad.dav1d.de/
 
