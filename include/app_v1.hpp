@@ -25,7 +25,6 @@ public:
         firstMouse = true;
         lastX = width / 2.0f;
         lastY = height / 2.0f;
-        leftButtonPressed = false;
     }
 
     ~App() {
@@ -65,7 +64,7 @@ public:
             return false;
         }
 
-        SDL_SetRelativeMouseMode(SDL_FALSE); // Show the cursor
+        SDL_SetRelativeMouseMode(SDL_TRUE);
 
         GetOpenGLVersionInfo();
         InitOpenGL();
@@ -193,23 +192,15 @@ private:
                 if (e.key.keysym.sym == SDLK_ESCAPE) {
                     quit = true;
                 }
-            } else if (e.type == SDL_MOUSEBUTTONDOWN) {
-                if (e.button.button == SDL_BUTTON_LEFT) {
-                    leftButtonPressed = true;
-                }
-            } else if (e.type == SDL_MOUSEBUTTONUP) {
-                if (e.button.button == SDL_BUTTON_LEFT) {
-                    leftButtonPressed = false;
-                }
             } else if (e.type == SDL_MOUSEMOTION) {
-                if (leftButtonPressed) {
+                if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT)) {
                     float xoffset = e.motion.xrel;
                     float yoffset = e.motion.yrel;
 
                     if (SDL_GetModState() & KMOD_CTRL) {
-                        arcballCamera.ProcessMouseRotation(-xoffset, -yoffset);
+                        arcballCamera.ProcessMouseRotation(xoffset, yoffset);
                     } else {
-                        arcballCamera.ProcessMousePan(-xoffset * 0.01f, yoffset * 0.01f);
+                        arcballCamera.ProcessMousePan(xoffset * 0.01f, -yoffset * 0.01f);
                     }
                 }
             } else if (e.type == SDL_MOUSEWHEEL) {
@@ -289,8 +280,6 @@ private:
     bool firstMouse;
     float lastX;
     float lastY;
-    bool leftButtonPressed;
 };
 
 #endif // APP_HPP
-

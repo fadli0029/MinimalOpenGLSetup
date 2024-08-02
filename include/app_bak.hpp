@@ -11,24 +11,30 @@
 #include <string>
 #include <random>
 #include "shader.hpp"
-#include "arcball_camera.hpp"
+#include "cameras/fps_camera.hpp"
+#include "input_handlers/fps_input_handler.hpp"
 
 class App {
 public:
-    App(int width, int height, const std::string& title, const char* vertexShader, const char* fragmentShader)
-        : screenWidth(width), screenHeight(height), windowTitle(title), vertexShaderPath(vertexShader), fragmentShaderPath(fragmentShader)
-    {
+    App(int width, int height, const std::string& title, const char* vertexShader, const char* fragmentShader) {
+        screenWidth = width;
+        screenHeight = height;
+        windowTitle = title;
         window = nullptr;
         context = nullptr;
         quit = false;
-        arcballCamera = ArcballCamera(glm::vec3(0.0f, 0.0f, 5.0f));
-        firstMouse = true;
-        lastX = width / 2.0f;
-        lastY = height / 2.0f;
-        leftButtonPressed = false;
+        fpsCamera = FPSCamera(glm::vec3(0.0f, 0.0f, 3.0f));
+        inputHandler = new FPSInputHandler(fpsCamera);
+
+        deltaTime = 0.0f;
+        lastFrame = 0.0f;
+
+        vertexShaderPath = vertexShader;
+        fragmentShaderPath = fragmentShader;
     }
 
     ~App() {
+        delete inputHandler;
     }
 
     bool Initialize() {
@@ -65,7 +71,7 @@ public:
             return false;
         }
 
-        SDL_SetRelativeMouseMode(SDL_FALSE); // Show the cursor
+        SDL_SetRelativeMouseMode(SDL_TRUE);
 
         GetOpenGLVersionInfo();
         InitOpenGL();
@@ -189,31 +195,12 @@ private:
             if (e.type == SDL_QUIT) {
                 std::cout << "SDL_QUIT event triggered." << std::endl;
                 quit = true;
-            } else if (e.type == SDL_KEYDOWN) {
-                if (e.key.keysym.sym == SDLK_ESCAPE) {
-                    quit = true;
-                }
-            } else if (e.type == SDL_MOUSEBUTTONDOWN) {
-                if (e.button.button == SDL_BUTTON_LEFT) {
-                    leftButtonPressed = true;
-                }
-            } else if (e.type == SDL_MOUSEBUTTONUP) {
-                if (e.button.button == SDL_BUTTON_LEFT) {
-                    leftButtonPressed = false;
-                }
+            } else if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP) {
+                inputHandler->HandleKeyboardInput(e, deltaTime);
             } else if (e.type == SDL_MOUSEMOTION) {
-                if (leftButtonPressed) {
-                    float xoffset = e.motion.xrel;
-                    float yoffset = e.motion.yrel;
-
-                    if (SDL_GetModState() & KMOD_CTRL) {
-                        arcballCamera.ProcessMouseRotation(-xoffset, -yoffset);
-                    } else {
-                        arcballCamera.ProcessMousePan(-xoffset * 0.01f, yoffset * 0.01f);
-                    }
-                }
+                inputHandler->HandleMouseMotion(e);
             } else if (e.type == SDL_MOUSEWHEEL) {
-                arcballCamera.ProcessMouseScroll(e.wheel.y);
+                inputHandler->HandleMouseWheel(e);
             }
         }
     }
@@ -231,8 +218,8 @@ private:
 
         // 3. Set variables (uniforms) in the shaders (ex: the model, view and projection matrices)
         // (a) Set the camera view and projection matrices
-        glm::mat4 view = arcballCamera.GetViewMatrix();
-        glm::mat4 projection = glm::perspective(glm::radians(arcballCamera.Zoom), (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
+        glm::mat4 view = fpsCamera.GetViewMatrix();
+        glm::mat4 projection = glm::perspective(glm::radians(fpsCamera.Zoom), (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
         shader->setMat4("view", view);
         shader->setMat4("projection", projection);
 
@@ -284,13 +271,8 @@ private:
     unsigned int planeVAO, planeVBO, planeEBO;
     Shader* shader;
 
-    ArcballCamera arcballCamera;
-
-    bool firstMouse;
-    float lastX;
-    float lastY;
-    bool leftButtonPressed;
+    FPSCamera fpsCamera;
+    InputHandler* inputHandler;
 };
 
 #endif // APP_HPP
-

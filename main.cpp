@@ -1,8 +1,9 @@
 #include "app.hpp"
 
 int main() {
-    const char* vertexShader = "shaders/vert.vs";
-    const char* fragmentShader = "shaders/frag.fs";
+
+    const char *vertexShader = "shaders/vert.vs";
+    const char *fragmentShader = "shaders/frag.fs";
 
     App app(800, 600, "OpenGL Window", vertexShader, fragmentShader);
     if (app.Initialize()) {
