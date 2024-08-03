@@ -1,5 +1,5 @@
 
-## TODO's
+# TODO's
 - [x] FPS Camera system
 - [x] Arcball Camera system
 - [x] Code cleanup
@@ -9,7 +9,7 @@
 - [ ] Integrate Bullet3 physics
 - [ ] More code cleanup
 
-## Dependencies
+# Dependencies
 > [!NOTE]
 > This assumes your machine has OpenGL support.
 
@@ -19,15 +19,15 @@
 
 For 3. OpenGL Mathematics (GLM), you don't need to do anything, it's taken care of in `CMakeLists.txt`.
 
-## Installation
+# Installation
 
-### Installing SDL2
+## Installing SDL2
 ```bash
 sudo apt-get install libsdl2-2.0-0
 sudo apt-get install libsdl2-dev
 ```
 
-### Installing/Using Glad
+## Installing/Using Glad
 This setup uses Glad to include OpenGL functionalities: https://glad.dav1d.de/
 
 For the settings, see the image below. Click `ADD ALL` after selecting `API->gl->Version 4.1`.
@@ -36,7 +36,7 @@ Then, after generating the necessary files, extract the zip file and paste the `
 
 ![Project Logo](glad_settings.png)
 
-### Installing Bullet3 & Using `vcpkg` with CMake buildsystem
+## Installing Bullet3 & Using `vcpkg` with CMake buildsystem
 First, install vcpkg. Run the command below, preferably in you `/home` directory (anywhere is fine as long as you remember where you installed it since we need to add to `PATH` later):
 ```bash
 git clone https://github.com/Microsoft/vcpkg.git
