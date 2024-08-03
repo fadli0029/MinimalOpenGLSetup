@@ -20,17 +20,18 @@ public:
         screenWidth = width;
         screenHeight = height;
         windowTitle = title;
+        vertexShaderPath = vertexShader;
+        fragmentShaderPath = fragmentShader;
+
         window = nullptr;
         context = nullptr;
         quit = false;
+
         fpsCamera = FPSCamera(glm::vec3(0.0f, 0.0f, 3.0f));
         inputHandler = new FPSInputHandler(fpsCamera);
 
         deltaTime = 0.0f;
         lastFrame = 0.0f;
-
-        vertexShaderPath = vertexShader;
-        fragmentShaderPath = fragmentShader;
     }
 
     ~App() {
@@ -195,12 +196,9 @@ private:
             if (e.type == SDL_QUIT) {
                 std::cout << "SDL_QUIT event triggered." << std::endl;
                 quit = true;
-            } else if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP) {
-                inputHandler->HandleKeyboardInput(e, deltaTime);
-            } else if (e.type == SDL_MOUSEMOTION) {
-                inputHandler->HandleMouseMotion(e);
-            } else if (e.type == SDL_MOUSEWHEEL) {
-                inputHandler->HandleMouseWheel(e);
+            }
+            else {
+              inputHandler->HandleInput(e, deltaTime);
             }
         }
     }
@@ -255,17 +253,17 @@ private:
 
     int screenWidth;
     int screenHeight;
-
-    float deltaTime;
-    float lastFrame;
+    std::string windowTitle;
 
     const char* vertexShaderPath;
     const char* fragmentShaderPath;
 
-    bool quit;
-    std::string windowTitle;
+    float deltaTime;
+    float lastFrame;
+
     SDL_Window* window;
     SDL_GLContext context;
+    bool quit;
 
     unsigned int cubeVAO, cubeVBO, cubeEBO;
     unsigned int planeVAO, planeVBO, planeEBO;

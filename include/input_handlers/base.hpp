@@ -5,11 +5,13 @@
 
 // Base input handler class
 class InputHandler {
-public:
+  public:
     virtual ~InputHandler() = default;
-    virtual void HandleKeyboardInput(const SDL_Event& e, float deltaTime) = 0;
-    virtual void HandleMouseMotion(const SDL_Event& e) = 0;
-    virtual void HandleMouseWheel(const SDL_Event& e) = 0;
+    virtual void HandleInput(const SDL_Event &e, float deltaTime) = 0;
+    virtual void HandleKeyboardInput(const SDL_Event &e, float deltaTime) = 0;
+    virtual void HandleMouseMotion(const SDL_Event &e) = 0;
+    virtual void HandleMouseClick(const SDL_Event &e) = 0;
+    virtual void HandleMouseWheel(const SDL_Event &e) = 0;
 };
 
 #endif // BASE_HPP

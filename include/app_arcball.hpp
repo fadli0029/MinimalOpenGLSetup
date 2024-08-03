@@ -12,23 +12,31 @@
 #include <random>
 #include "shader.hpp"
 #include "arcball_camera.hpp"
+#include "input_handlers/arcball_input_handler.hpp"
 
 class App {
 public:
-    App(int width, int height, const std::string& title, const char* vertexShader, const char* fragmentShader)
-        : screenWidth(width), screenHeight(height), windowTitle(title), vertexShaderPath(vertexShader), fragmentShaderPath(fragmentShader)
-    {
+    App(int width, int height, const std::string& title, const char* vertexShader, const char* fragmentShader) {
+        screenWidth = width;
+        screenHeight = height;
+        windowTitle = title;
+
+        vertexShaderPath = vertexShader;
+        fragmentShaderPath = fragmentShader;
+
         window = nullptr;
         context = nullptr;
         quit = false;
+
         arcballCamera = ArcballCamera(glm::vec3(0.0f, 0.0f, 5.0f));
-        firstMouse = true;
-        lastX = width / 2.0f;
-        lastY = height / 2.0f;
-        leftButtonPressed = false;
+        inputHandler = new ArcballInputHandler(arcballCamera);
+
+        deltaTime = 0.0f;
+        lastFrame = 0.0f;
     }
 
     ~App() {
+        delete inputHandler;
     }
 
     bool Initialize() {
@@ -189,31 +197,9 @@ private:
             if (e.type == SDL_QUIT) {
                 std::cout << "SDL_QUIT event triggered." << std::endl;
                 quit = true;
-            } else if (e.type == SDL_KEYDOWN) {
-                if (e.key.keysym.sym == SDLK_ESCAPE) {
-                    quit = true;
-                }
-            } else if (e.type == SDL_MOUSEBUTTONDOWN) {
-                if (e.button.button == SDL_BUTTON_LEFT) {
-                    leftButtonPressed = true;
-                }
-            } else if (e.type == SDL_MOUSEBUTTONUP) {
-                if (e.button.button == SDL_BUTTON_LEFT) {
-                    leftButtonPressed = false;
-                }
-            } else if (e.type == SDL_MOUSEMOTION) {
-                if (leftButtonPressed) {
-                    float xoffset = e.motion.xrel;
-                    float yoffset = e.motion.yrel;
-
-                    if (SDL_GetModState() & KMOD_CTRL) {
-                        arcballCamera.ProcessMouseRotation(-xoffset, -yoffset);
-                    } else {
-                        arcballCamera.ProcessMousePan(-xoffset * 0.01f, yoffset * 0.01f);
-                    }
-                }
-            } else if (e.type == SDL_MOUSEWHEEL) {
-                arcballCamera.ProcessMouseScroll(e.wheel.y);
+            }
+            else {
+              inputHandler->HandleInput(e, deltaTime);
             }
         }
     }
@@ -268,29 +254,24 @@ private:
 
     int screenWidth;
     int screenHeight;
-
-    float deltaTime;
-    float lastFrame;
+    std::string windowTitle;
 
     const char* vertexShaderPath;
     const char* fragmentShaderPath;
 
-    bool quit;
-    std::string windowTitle;
+    float deltaTime;
+    float lastFrame;
+
     SDL_Window* window;
     SDL_GLContext context;
+    bool quit;
 
     unsigned int cubeVAO, cubeVBO, cubeEBO;
     unsigned int planeVAO, planeVBO, planeEBO;
     Shader* shader;
 
     ArcballCamera arcballCamera;
-
-    bool firstMouse;
-    float lastX;
-    float lastY;
-    bool leftButtonPressed;
+    InputHandler* inputHandler;
 };
 
 #endif // APP_HPP
-
