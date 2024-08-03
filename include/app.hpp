@@ -87,8 +87,6 @@ public:
             return false;
         }
 
-        SDL_SetRelativeMouseMode(SDL_FALSE);
-
         GetOpenGLVersionInfo();
         InitOpenGL();
         return true;
@@ -284,6 +282,8 @@ private:
 
             activeCameraType = CameraType::Arcball;
             activeInputHandler = arcballInputHandler;
+
+            SDL_SetRelativeMouseMode(SDL_FALSE);
         } else {
             // Sync FPS camera with the current state of the Arcball camera
             fpsCamera.Position = arcballCamera.Position;
@@ -293,6 +293,8 @@ private:
 
             activeCameraType = CameraType::FPS;
             activeInputHandler = fpsInputHandler;
+
+            SDL_SetRelativeMouseMode(SDL_TRUE);
         }
     }
 
