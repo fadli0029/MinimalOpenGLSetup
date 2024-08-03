@@ -2,8 +2,8 @@
 - [x] FPS Camera system
 - [x] Arcball Camera system
 - [x] Code cleanup
-- [x] Functionality to switch between different camera systems (via some kind of button?)
-- [ ] Currently after switching camera, the position resets. This is not a desired behavior. If I switch camera after having moved to a certain position while I was in FPS camera, then the camera should switch to arcball on the spot and not move me back to where I was. I guess one possible fix is to find a mapping between fps to arcball and vice versa, i.e.: given the values for every variable in the fps camera system, feed this to arcball and map it to arcball's variables, and vice versa.
+- [x] Functionality to switch between different xcamera systems (via some kind of button?)
+- [x] Currently after switching camera, the position resets. This is not a desired behavior. If I switch camera after having moved to a certain position while I was in FPS camera, then the camera should switch to arcball on the spot and not move me back to where I was.
 - [ ] Figure out better way to display the cube? (not that important now)
 - [ ] Integrate Bullet3 physics
 - [ ] More code cleanup

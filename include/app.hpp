@@ -199,8 +199,8 @@ private:
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
         glEnableVertexAttribArray(1);
 
-        glEnable(GL_DEPTH_TEST);
 
+        glEnable(GL_DEPTH_TEST);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
     }
@@ -225,7 +225,6 @@ private:
         if (activeCameraType == CameraType::FPS) {
             dynamic_cast<FPSInputHandler*>(activeInputHandler)->Update(deltaTime);
         }
-        // Update logic for other camera types can be implemented similarly
     }
 
     void Render() {
@@ -237,8 +236,12 @@ private:
 
         // 3. Set variables (uniforms) in the shaders (ex: the model, view and projection matrices)
         // (a) Set the camera view and projection matrices
-        glm::mat4 view = (activeCameraType == CameraType::FPS) ? fpsCamera.GetViewMatrix() : arcballCamera.GetViewMatrix();
-        glm::mat4 projection = glm::perspective(glm::radians((activeCameraType == CameraType::FPS) ? fpsCamera.Zoom : arcballCamera.Zoom), (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
+        glm::mat4 view = (activeCameraType == CameraType::FPS)
+            ? fpsCamera.GetViewMatrix()
+            : arcballCamera.GetViewMatrix();
+        glm::mat4 projection = glm::perspective(glm::radians((activeCameraType == CameraType::FPS)
+            ? fpsCamera.Zoom
+            : arcballCamera.Zoom), (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
         shader->setMat4("view", view);
         shader->setMat4("projection", projection);
 
@@ -274,9 +277,20 @@ private:
 
     void SwitchCamera() {
         if (activeCameraType == CameraType::FPS) {
+            // Sync Arcball camera with the current state of the FPS camera
+            arcballCamera.Position = fpsCamera.Position;
+            arcballCamera.Target = fpsCamera.Position + fpsCamera.Front;
+            arcballCamera.Distance = glm::distance(fpsCamera.Position, arcballCamera.Target);
+
             activeCameraType = CameraType::Arcball;
             activeInputHandler = arcballInputHandler;
         } else {
+            // Sync FPS camera with the current state of the Arcball camera
+            fpsCamera.Position = arcballCamera.Position;
+            fpsCamera.Front = glm::normalize(arcballCamera.Target - arcballCamera.Position);
+            fpsCamera.Yaw = glm::degrees(atan2(fpsCamera.Front.z, fpsCamera.Front.x));
+            fpsCamera.Pitch = glm::degrees(asin(fpsCamera.Front.y));
+
             activeCameraType = CameraType::FPS;
             activeInputHandler = fpsInputHandler;
         }
