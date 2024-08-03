@@ -10,12 +10,17 @@
 #include <iostream>
 #include <string>
 #include <random>
-#include "shader.hpp"
 
+#include "shader.hpp"
 #include "cameras/fps_camera.hpp"
 #include "input_handlers/fps_input_handler.hpp"
 #include "cameras/arcball_camera.hpp"
 #include "input_handlers/arcball_input_handler.hpp"
+
+// Test bullet3 includes
+#include "btBulletDynamicsCommon.h"
+#include "LinearMath/btVector3.h"
+#include "LinearMath/btAlignedObjectArray.h"
 
 class App {
 public:

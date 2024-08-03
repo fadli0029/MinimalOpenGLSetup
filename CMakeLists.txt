@@ -9,6 +9,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 find_package(SDL2 REQUIRED CONFIG REQUIRED COMPONENTS SDL2)
 find_package(SDL2 REQUIRED CONFIG COMPONENTS SDL2main)
 find_package(Eigen3 REQUIRED)
+find_package(Bullet CONFIG REQUIRED)
 
 include(FetchContent)
 
@@ -43,6 +44,7 @@ target_link_libraries(LearningOpenGL
     SDL2::SDL2
     SDL2::SDL2main
     glm::glm
+    ${BULLET_LIBRARIES}
 )
 
 # Set the working directory to the root of the project for the executable
