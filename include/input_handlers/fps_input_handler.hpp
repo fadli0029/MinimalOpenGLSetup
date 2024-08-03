@@ -7,7 +7,9 @@
 // FPS input handler class
 class FPSInputHandler : public InputHandler {
   public:
-    FPSInputHandler(FPSCamera &fpsCamera) : fpsCamera(fpsCamera) {}
+    FPSInputHandler(FPSCamera &fpsCamera) : fpsCamera(fpsCamera) {
+        moveForward = moveBackward = moveLeft = moveRight = false;
+    }
 
     void HandleInput(const SDL_Event &e, float deltaTime) override {
         if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP) {
@@ -20,28 +22,30 @@ class FPSInputHandler : public InputHandler {
     }
 
     void HandleKeyboardInput(const SDL_Event &e, float deltaTime) override {
-        if (e.type == SDL_KEYDOWN) {
-            switch (e.key.keysym.sym) {
-            case SDLK_w:
-                fpsCamera.ProcessKeyboard(FORWARD, deltaTime);
-                break;
-            case SDLK_s:
-                fpsCamera.ProcessKeyboard(BACKWARD, deltaTime);
-                break;
-            case SDLK_a:
-                fpsCamera.ProcessKeyboard(LEFT, deltaTime);
-                break;
-            case SDLK_d:
-                fpsCamera.ProcessKeyboard(RIGHT, deltaTime);
-                break;
-            case SDLK_ESCAPE:
+        bool keyState = (e.type == SDL_KEYDOWN);
+        switch (e.key.keysym.sym) {
+        case SDLK_w:
+            moveForward = keyState;
+            break;
+        case SDLK_s:
+            moveBackward = keyState;
+            break;
+        case SDLK_a:
+            moveLeft = keyState;
+            break;
+        case SDLK_d:
+            moveRight = keyState;
+            break;
+        case SDLK_ESCAPE:
+            if (keyState) {
                 SDL_Event quitEvent;
                 quitEvent.type = SDL_QUIT;
                 SDL_PushEvent(&quitEvent);
-                break;
             }
+            break;
         }
     }
+
     void HandleMouseMotion(const SDL_Event &e) override {
         fpsCamera.ProcessMouseMovement(e.motion.xrel, -e.motion.yrel);
     }
@@ -52,8 +56,23 @@ class FPSInputHandler : public InputHandler {
         fpsCamera.ProcessMouseScroll(e.wheel.y);
     }
 
+    void Update(float deltaTime) {
+        if (moveForward)
+            fpsCamera.ProcessKeyboard(FORWARD, deltaTime);
+        if (moveBackward)
+            fpsCamera.ProcessKeyboard(BACKWARD, deltaTime);
+        if (moveLeft)
+            fpsCamera.ProcessKeyboard(LEFT, deltaTime);
+        if (moveRight)
+            fpsCamera.ProcessKeyboard(RIGHT, deltaTime);
+    }
+
   private:
     FPSCamera &fpsCamera;
+    bool moveForward;
+    bool moveBackward;
+    bool moveLeft;
+    bool moveRight;
 };
 
 #endif // FPS_INPUT_HANDLER_HPP

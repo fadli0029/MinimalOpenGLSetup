@@ -1,4 +1,4 @@
-#include "app_arcball.hpp"
+#include "app.hpp"
 
 int main() {
 

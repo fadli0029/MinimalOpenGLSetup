@@ -11,11 +11,19 @@
 #include <string>
 #include <random>
 #include "shader.hpp"
+
 #include "cameras/fps_camera.hpp"
 #include "input_handlers/fps_input_handler.hpp"
+#include "cameras/arcball_camera.hpp"
+#include "input_handlers/arcball_input_handler.hpp"
 
 class App {
 public:
+    enum class CameraType {
+        FPS,
+        Arcball
+    };
+
     App(int width, int height, const std::string& title, const char* vertexShader, const char* fragmentShader) {
         screenWidth = width;
         screenHeight = height;
@@ -28,14 +36,21 @@ public:
         quit = false;
 
         fpsCamera = FPSCamera(glm::vec3(0.0f, 0.0f, 3.0f));
-        inputHandler = new FPSInputHandler(fpsCamera);
+        fpsInputHandler = new FPSInputHandler(fpsCamera);
+
+        arcballCamera = ArcballCamera(glm::vec3(0.0f, 0.0f, 5.0f));
+        arcballInputHandler = new ArcballInputHandler(arcballCamera);
 
         deltaTime = 0.0f;
         lastFrame = 0.0f;
+
+        activeCameraType = CameraType::FPS; // Default to FPS camera
+        activeInputHandler = fpsInputHandler;
     }
 
     ~App() {
-        delete inputHandler;
+        delete fpsInputHandler;
+        delete arcballInputHandler;
     }
 
     bool Initialize() {
@@ -197,15 +212,20 @@ private:
                 std::cout << "SDL_QUIT event triggered." << std::endl;
                 quit = true;
             }
-            else {
-              inputHandler->HandleInput(e, deltaTime);
+            else if (e.type == SDL_KEYDOWN) {
+                if (e.key.keysym.sym == SDLK_c) {
+                    SwitchCamera();
+                }
             }
+            activeInputHandler->HandleInput(e, deltaTime);
         }
     }
 
     void Update() {
-        // Update logic can be implemented here
-        dynamic_cast<FPSInputHandler*>(inputHandler)->Update(deltaTime);
+        if (activeCameraType == CameraType::FPS) {
+            dynamic_cast<FPSInputHandler*>(activeInputHandler)->Update(deltaTime);
+        }
+        // Update logic for other camera types can be implemented similarly
     }
 
     void Render() {
@@ -217,8 +237,8 @@ private:
 
         // 3. Set variables (uniforms) in the shaders (ex: the model, view and projection matrices)
         // (a) Set the camera view and projection matrices
-        glm::mat4 view = fpsCamera.GetViewMatrix();
-        glm::mat4 projection = glm::perspective(glm::radians(fpsCamera.Zoom), (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
+        glm::mat4 view = (activeCameraType == CameraType::FPS) ? fpsCamera.GetViewMatrix() : arcballCamera.GetViewMatrix();
+        glm::mat4 projection = glm::perspective(glm::radians((activeCameraType == CameraType::FPS) ? fpsCamera.Zoom : arcballCamera.Zoom), (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
         shader->setMat4("view", view);
         shader->setMat4("projection", projection);
 
@@ -252,6 +272,16 @@ private:
         SDL_Quit();
     }
 
+    void SwitchCamera() {
+        if (activeCameraType == CameraType::FPS) {
+            activeCameraType = CameraType::Arcball;
+            activeInputHandler = arcballInputHandler;
+        } else {
+            activeCameraType = CameraType::FPS;
+            activeInputHandler = fpsInputHandler;
+        }
+    }
+
     int screenWidth;
     int screenHeight;
     std::string windowTitle;
@@ -271,7 +301,12 @@ private:
     Shader* shader;
 
     FPSCamera fpsCamera;
-    InputHandler* inputHandler;
+    InputHandler* fpsInputHandler;
+    ArcballCamera arcballCamera;
+    InputHandler* arcballInputHandler;
+
+    CameraType activeCameraType;
+    InputHandler* activeInputHandler;
 };
 
 #endif // APP_HPP
