@@ -37,7 +37,7 @@ Then, after generating the necessary files, extract the zip file and paste the `
 ![Project Logo](glad_settings.png)
 
 ## Installing Bullet3 & Using `vcpkg` with CMake buildsystem
-First, install vcpkg. Run the command below, preferably in you `/home` directory (anywhere is fine as long as you remember where you installed it since we need to add to `PATH` later):
+First, install `vcpkg`. Run the command below, preferably in your `/home` directory (anywhere is fine as long as you remember where you installed it since we need to add to `PATH` later):
 ```bash
 git clone https://github.com/Microsoft/vcpkg.git
 cd vcpkg
@@ -47,8 +47,8 @@ cd vcpkg
 ```
 
 > [!IMPORTANT]
-> After running the `./vcpkg integrate install`, you will see something like the following:
-> CMake projects should use: "-DCMAKE_TOOLCHAIN_FILE=<some_path>/vcpkg.cmake"
+> After running the `./vcpkg integrate install`, you will see something like the following on your terminal:
+> `CMake projects should use: "-DCMAKE_TOOLCHAIN_FILE=<some_path>/vcpkg.cmake"`.
 > Remember this since you will need this later, let's call this `some_path` as `dcmake_toolchain_file_path`.
 
 Now, add `vcpkg` to `PATH`. Assuming you installed it in your `/home` directory earlier, then to do this add this line to your `.zshrc` (or `.bashrc` or whichever shell you are using):
