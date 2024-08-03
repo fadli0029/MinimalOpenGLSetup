@@ -94,7 +94,7 @@ Finally, creata a file `CMakePresets.json` containing the following:
 
 Where `dcmake_toolchain_file_path` is the `some_path` mentioned in the first step.
 
-# Building
+# Building & Running
 The script `build.sh` included in this repo is what I use to build most of my C++ projects and it works in most, if not all, kinds of C++ projects variations. Feel free to build this project in whichever method you prefer.
 
 If you are using the script `build.sh`, then building and running this project is as simple as:
