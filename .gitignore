@@ -4,3 +4,6 @@ include/glad/
 include/KHR/
 src/glad.c
 LearningOpenGL
+CMakePresets.json
+vcpkg-configuration.json
+vcpkg.json
