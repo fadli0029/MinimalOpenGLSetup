@@ -19,8 +19,6 @@
 
 // Test bullet3 includes
 #include "btBulletDynamicsCommon.h"
-#include "LinearMath/btVector3.h"
-#include "LinearMath/btAlignedObjectArray.h"
 
 class App {
 public:

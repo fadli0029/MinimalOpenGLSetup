@@ -5,7 +5,9 @@
 - [x] Code cleanup
 - [x] Functionality to switch between different xcamera systems (via some kind of button?)
 - [x] Currently after switching camera, the position resets. This is not a desired behavior. If I switch camera after having moved to a certain position while I was in FPS camera, then the camera should switch to arcball on the spot and not move me back to where I was.
-- [ ] Figure out better way to display the cube? (not that important now)
+- [ ] Need a way to define and visualize local coordinate frame per rendered object. This will allow us to do step below. I argue this is the first step to properly integrate Bullet3 Physics.
+- [ ] Figure out a way to conveniently query coordinates of rendered object.
+- [ ] Sketch out the "communication" between Bullet3 Physics and OpenGL rendering system. i.e.: Given an object `x` at a particular coordinate, feed the object definition to Bullet3 Physics, tell Bullet3 physics to define the `x`'s Physics, add it to Bullet3's world dynamic, then apply physics on it. I'm imagining this will output some kind of transformation. Then we feed this transformation to OpenGL renderer. Then I guess we have "integrated" physics into the rendered objects.
 - [ ] Integrate Bullet3 physics
 - [ ] More code cleanup
 
