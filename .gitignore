@@ -7,3 +7,5 @@ LearningOpenGL
 CMakePresets.json
 vcpkg-configuration.json
 vcpkg.json
+*.xopp
+misc/

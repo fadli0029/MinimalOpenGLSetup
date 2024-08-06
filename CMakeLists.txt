@@ -25,22 +25,26 @@ include_directories(
     include
     include/cameras
     include/input_handlers
+    include/shader
     ${EIGEN3_INCLUDE_DIR}
     ${SDL2_INCLUDE_DIRS}
+    ${glm_SOURCE_DIR}
+    ${BULLET_INCLUDE_DIRS}
 )
 
 add_library(glad src/glad.c)
-target_include_directories(glad PUBLIC include)
+target_include_directories(glad PUBLIC include ${glm_SOURCE_DIR})
 
-add_library(foo src/foo.cpp)
-target_include_directories(foo PUBLIC include)
+add_library(app src/app.cpp)
+target_include_directories(app PUBLIC include ${glm_SOURCE_DIR})
+target_link_libraries(app PUBLIC glad)
 
 add_executable(LearningOpenGL main.cpp)
 
 target_link_libraries(LearningOpenGL
     PRIVATE
     glad
-    foo
+    app
     SDL2::SDL2
     SDL2::SDL2main
     glm::glm

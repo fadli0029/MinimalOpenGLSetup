@@ -36,7 +36,7 @@ For the settings, see the image below. Click `ADD ALL` after selecting `API->gl-
 
 Then, after generating the necessary files, extract the zip file and paste the `glad` folder and `KHR` folder into the `include` directory. Put the `glad.c` file into the `src` directory. That's it! The `CMakeLists.txt` file is already set up to work with this setup.
 
-![Project Logo](glad_settings.png)
+![Project Logo](misc/glad_settings.png)
 
 ## Installing Bullet3 & Using `vcpkg` with CMake buildsystem
 First, install `vcpkg`. Run the command below, preferably in your `/home` directory (anywhere is fine as long as you remember where you installed it since we need to add to `PATH` later):
