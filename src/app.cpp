@@ -85,6 +85,7 @@ void App::Run() {
         SDL_GL_SwapWindow(window_);
     }
     CleanUp();
+    ShutdownPhysics();
 }
 
 void App::GetOpenGLVersionInfo() {
