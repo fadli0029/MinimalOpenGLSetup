@@ -39,12 +39,16 @@ add_library(app src/app.cpp)
 target_include_directories(app PUBLIC include ${glm_SOURCE_DIR})
 target_link_libraries(app PUBLIC glad)
 
+add_library(bullet_physics src/bullet_physics.cpp)
+target_include_directories(bullet_physics PUBLIC include)
+
 add_executable(LearningOpenGL main.cpp)
 
 target_link_libraries(LearningOpenGL
     PRIVATE
     glad
     app
+    bullet_physics
     SDL2::SDL2
     SDL2::SDL2main
     glm::glm

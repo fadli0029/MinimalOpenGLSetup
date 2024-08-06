@@ -16,8 +16,9 @@
 #include "input_handlers/fps_input_handler.hpp"
 #include "shader/shader.hpp"
 
-// Bullet Physics includes
-#include "btBulletDynamicsCommon.h"
+
+// Physics includes
+#include "bullet_physics/bullet_physics.hpp"
 
 class App {
   public:
@@ -41,9 +42,9 @@ class App {
     void CleanUp();
 
     // Bullet Physics
-    void InitPhysics();
-    void ShutdownPhysics();
-    void CreatePhysicsObjects();
+    // void InitPhysics();
+    // void ShutdownPhysics();
+    // void CreatePhysicsObjects();
 
     int screenWidth_, screenHeight_;
     std::string windowTitle_;
@@ -68,16 +69,18 @@ class App {
     CameraType activeCameraType_;
     InputHandler *activeInputHandler_;
 
+    BulletPhysics *physicsHandler_;
+
     // Bullet physics
-    btCollisionConfiguration* b3CollisionConfiguration_;
-    btCollisionDispatcher* b3Dispatcher_;
-    btBroadphaseInterface* b3Broadphase_;
-    btConstraintSolver* b3Solver_;
-    btDynamicsWorld* b3World_;
+    // btCollisionConfiguration* b3CollisionConfiguration_;
+    // btCollisionDispatcher* b3Dispatcher_;
+    // btBroadphaseInterface* b3Broadphase_;
+    // btConstraintSolver* b3Solver_;
+    // btDynamicsWorld* b3World_;
 
     // Cube physics object
-    btDefaultMotionState* b3CubeMotionState_;
-    btDefaultMotionState* b3PlaneMotionState_;
+    // btDefaultMotionState* b3CubeMotionState_;
+    // btDefaultMotionState* b3PlaneMotionState_;
 };
 
 #endif // APP_HPP
