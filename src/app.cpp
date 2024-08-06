@@ -1,4 +1,5 @@
 #include "app/app.hpp"
+#include <optional>
 
 App::App(int width, int height, const std::string& title, const char* vertexShader, const char* fragmentShader) {
     screenWidth_ = width;
@@ -11,10 +12,12 @@ App::App(int width, int height, const std::string& title, const char* vertexShad
     context_ = nullptr;
     quit_ = false;
 
-    fpsCamera_ = FPSCamera(glm::vec3(0.0f, 0.0f, 3.0f));
+    // fpsCamera_ = FPSCamera(glm::vec3(0.0f, 0.0f, 3.0f));
+    fpsCamera_ = FPSCamera(glm::vec3(0.0f, 10.0f, 30.0f));
     fpsInputHandler_ = new FPSInputHandler(fpsCamera_);
 
-    arcballCamera_ = ArcballCamera(glm::vec3(0.0f, 0.0f, 5.0f));
+    // arcballCamera_ = ArcballCamera(glm::vec3(0.0f, 0.0f, 5.0f));
+    arcballCamera_ = ArcballCamera(glm::vec3(0.0f, 10.0f, 30.0f));
     arcballInputHandler_ = new ArcballInputHandler(arcballCamera_);
 
     deltaTime_ = 0.0f;
@@ -125,10 +128,10 @@ void App::InitOpenGL() {
 
     float planeVertices[] = {
         // positions            // colors
-        -50.0f, -0.5f,  50.0f,  0.8f, 0.8f, 0.8f,
-         50.0f, -0.5f,  50.0f,  0.8f, 0.8f, 0.8f,
-         50.0f, -0.5f, -50.0f,  0.8f, 0.8f, 0.8f,
-        -50.0f, -0.5f, -50.0f,  0.8f, 0.8f, 0.8f
+        -50.0f, -0.0f,  50.0f,  0.8f, 0.8f, 0.8f,
+         50.0f, -0.0f,  50.0f,  0.8f, 0.8f, 0.8f,
+         50.0f, -0.0f, -50.0f,  0.8f, 0.8f, 0.8f,
+        -50.0f, -0.0f, -50.0f,  0.8f, 0.8f, 0.8f
     };
 
     unsigned int planeIndices[] = {
@@ -217,9 +220,10 @@ void App::Render() {
     glm::mat4 view = (activeCameraType_ == CameraType::FPS)
         ? fpsCamera_.GetViewMatrix()
         : arcballCamera_.GetViewMatrix();
-    glm::mat4 projection = glm::perspective(glm::radians((activeCameraType_ == CameraType::FPS)
-        ? fpsCamera_.Zoom
-        : arcballCamera_.Zoom), (float)screenWidth_ / (float)screenHeight_, 0.1f, 100.0f);
+    float fov = (activeCameraType_ == CameraType::FPS) ? fpsCamera_.Zoom : arcballCamera_.Zoom;
+    fov = 60.0f; // debugging physics, I needed more fov (both fps and arcball give 45.)
+    glm::mat4 projection = glm::perspective(glm::radians(fov), (float)screenWidth_ / (float)screenHeight_, 0.1f, 100.0f);
+
     shader_->setMat4("view", view);
     shader_->setMat4("projection", projection);
 
@@ -230,17 +234,15 @@ void App::Render() {
         b3CubeMotionState_->getWorldTransform(trans);
         trans.getOpenGLMatrix(matrix);
     }
-    glm::mat4 model = glm::make_mat4(matrix);
-    shader_->setMat4("model", model);
-    // glm::mat4 model = glm::mat4(1.0f);
-    // shader_->setMat4("model", model);
+    glm::mat4 cubeModel = glm::make_mat4(matrix);
+    shader_->setMat4("model", cubeModel);
 
     glBindVertexArray(cubeVAO_);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
     // Render the plane
-    model = glm::mat4(1.0f);
-    shader_->setMat4("model", model);
+    glm::mat4 planeModel = glm::mat4(1.0f);
+    shader_->setMat4("model", planeModel);
 
     glBindVertexArray(planeVAO_);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -311,22 +313,47 @@ void App::ShutdownPhysics() {
 }
 
 void App::CreatePhysicsObjects() {
-    // Create a box shape of size (1,1,1)
-    btBoxShape* boxShape = new btBoxShape(btVector3(1.0f, 1.0f, 1.0f));
+    // ======================================================================================
+    // Cube physics
+    // =======================================================================================
+    // Create a box shape of size (1,1,1), defined by half-extents
+    btBoxShape* boxShape = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
 
     // Set box initial pose
-    btTransform transform;
-    transform.setIdentity(); // init. orientation
-    transform.setOrigin(btVector3(0.0f, 30.0f, 0.0f)); // init. position
+    btTransform cubeTransform;
+    cubeTransform.setIdentity(); // init. orientation
+    cubeTransform.setOrigin(btVector3(0.0f, 15.0f, 0.0f)); // init. position
 
     // Create a motion state
-    b3CubeMotionState_ = new btDefaultMotionState(transform);
+    b3CubeMotionState_ = new btDefaultMotionState(cubeTransform);
 
     // Create the rigid body construction info object, giving it a
     // mass of 1, the motion state, and the shape
-    btRigidBody::btRigidBodyConstructionInfo rbInfo(1.0f, b3CubeMotionState_, boxShape);
-    btRigidBody* b3RigidBody = new btRigidBody(rbInfo);
+    float cubeMass = 1.0f;
+    btRigidBody::btRigidBodyConstructionInfo cubeRbInfo(cubeMass, b3CubeMotionState_, boxShape);
+    btRigidBody* b3CubeRigidBody = new btRigidBody(cubeRbInfo);
 
     // Inform our world that we just created a new rigid body for it to manage
-    b3World_->addRigidBody(b3RigidBody);
+    b3World_->addRigidBody(b3CubeRigidBody);
+
+    // ======================================================================================
+    // Plane physics
+    // ======================================================================================
+    // Create a static plane shape
+    btStaticPlaneShape* planeShape = new btStaticPlaneShape(btVector3(0, 1, 0), 0);
+
+    // Set plane initial pose
+    btTransform planeTransform;
+    planeTransform.setIdentity(); // init. orientation
+
+    // Create a motion state for the plane
+    b3PlaneMotionState_ = new btDefaultMotionState(planeTransform);
+
+    // Create the rigid body construction info object for the plane with zero mass
+    float planeMass = 0.0f;
+    btRigidBody::btRigidBodyConstructionInfo planeRbInfo(planeMass, b3PlaneMotionState_, planeShape);
+    btRigidBody* b3PlaneRigidBody = new btRigidBody(planeRbInfo);
+
+    // Inform our world that we just created a new rigid body for it to manage
+    b3World_->addRigidBody(b3PlaneRigidBody);
 }

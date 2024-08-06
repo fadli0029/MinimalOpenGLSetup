@@ -77,6 +77,7 @@ class App {
 
     // Cube physics object
     btDefaultMotionState* b3CubeMotionState_;
+    btDefaultMotionState* b3PlaneMotionState_;
 };
 
 #endif // APP_HPP
