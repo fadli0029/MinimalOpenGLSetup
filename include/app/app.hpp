@@ -6,7 +6,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
 #include <iostream>
 #include <random>
 #include <string>
@@ -17,7 +16,7 @@
 #include "input_handlers/fps_input_handler.hpp"
 #include "shader/shader.hpp"
 
-// Test bullet3 includes
+// Bullet Physics includes
 #include "btBulletDynamicsCommon.h"
 
 class App {
@@ -41,31 +40,43 @@ class App {
     void UpdateViewport(const int &width, const int &height);
     void CleanUp();
 
-    int screenWidth;
-    int screenHeight;
-    std::string windowTitle;
+    // Bullet Physics
+    void InitPhysics();
+    void ShutdownPhysics();
+    void CreatePhysicsObjects();
 
-    const char *vertexShaderPath;
-    const char *fragmentShaderPath;
+    int screenWidth_, screenHeight_;
+    std::string windowTitle_;
 
-    float deltaTime;
-    float lastFrame;
+    const char *vertexShaderPath_, *fragmentShaderPath_;
 
-    SDL_Window *window;
-    SDL_GLContext context;
-    bool quit;
+    float deltaTime_, lastFrame_;
 
-    unsigned int cubeVAO, cubeVBO, cubeEBO;
-    unsigned int planeVAO, planeVBO, planeEBO;
-    Shader *shader;
+    SDL_Window *window_;
+    SDL_GLContext context_;
+    bool quit_;
 
-    FPSCamera fpsCamera;
-    InputHandler *fpsInputHandler;
-    ArcballCamera arcballCamera;
-    InputHandler *arcballInputHandler;
+    unsigned int cubeVAO_, cubeVBO_, cubeEBO_;
+    unsigned int planeVAO_, planeVBO_, planeEBO_;
+    Shader *shader_;
 
-    CameraType activeCameraType;
-    InputHandler *activeInputHandler;
+    FPSCamera fpsCamera_;
+    InputHandler *fpsInputHandler_;
+    ArcballCamera arcballCamera_;
+    InputHandler *arcballInputHandler_;
+
+    CameraType activeCameraType_;
+    InputHandler *activeInputHandler_;
+
+    // Bullet physics
+    btCollisionConfiguration* b3CollisionConfiguration_;
+    btCollisionDispatcher* b3Dispatcher_;
+    btBroadphaseInterface* b3Broadphase_;
+    btConstraintSolver* b3Solver_;
+    btDynamicsWorld* b3World_;
+
+    // Cube physics object
+    btDefaultMotionState* b3CubeMotionState_;
 };
 
 #endif // APP_HPP
