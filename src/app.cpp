@@ -193,6 +193,9 @@ void App::ProcessInput() {
                 SwitchCamera();
             }
         }
+        else if (e.type == SDL_WINDOWEVENT && e.window.event == SDL_WINDOWEVENT_RESIZED) {
+            UpdateViewport(e.window.data1, e.window.data2);
+        }
         activeInputHandler->HandleInput(e, deltaTime);
     }
 }
@@ -236,21 +239,6 @@ void App::Render() {
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
-void App::CleanUp() {
-    glDeleteVertexArrays(1, &cubeVAO);
-    glDeleteBuffers(1, &cubeVBO);
-    glDeleteBuffers(1, &cubeEBO);
-
-    glDeleteVertexArrays(1, &planeVAO);
-    glDeleteBuffers(1, &planeVBO);
-    glDeleteBuffers(1, &planeEBO);
-
-    delete shader;
-    SDL_GL_DeleteContext(context);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
-}
-
 void App::SwitchCamera() {
     if (activeCameraType == CameraType::FPS) {
         // Sync Arcball camera with the current state of the FPS camera
@@ -274,4 +262,25 @@ void App::SwitchCamera() {
 
         SDL_SetRelativeMouseMode(SDL_TRUE);
     }
+}
+
+void App::UpdateViewport(const int &width, const int &height) {
+    screenWidth = width;
+    screenHeight = height;
+    glViewport(0, 0, screenWidth, screenHeight);
+}
+
+void App::CleanUp() {
+    glDeleteVertexArrays(1, &cubeVAO);
+    glDeleteBuffers(1, &cubeVBO);
+    glDeleteBuffers(1, &cubeEBO);
+
+    glDeleteVertexArrays(1, &planeVAO);
+    glDeleteBuffers(1, &planeVBO);
+    glDeleteBuffers(1, &planeEBO);
+
+    delete shader;
+    SDL_GL_DeleteContext(context);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
 }

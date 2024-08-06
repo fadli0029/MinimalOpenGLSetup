@@ -37,8 +37,9 @@ class App {
     void ProcessInput();
     void Update();
     void Render();
-    void CleanUp();
     void SwitchCamera();
+    void UpdateViewport(const int &width, const int &height);
+    void CleanUp();
 
     int screenWidth;
     int screenHeight;
